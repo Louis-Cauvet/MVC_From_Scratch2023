@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Controller\IndexController;
+use App\Controller\NewsletterController;
 use App\Controller\ProductController;
 use App\DependencyInjection\Container;
 use App\Repository\ProductRepository;
@@ -68,21 +69,7 @@ $container
 
 // --- ROUTER ------------------------------------------------
 $router = new Router($container);
-
-$router
-    ->addRoute(
-        new Route('/', 'home', 'GET', IndexController::class, 'home')
-    )
-    ->addRoute(
-        new Route('/contact', 'contact', 'GET', IndexController::class, 'contact')
-    )
-    ->addRoute(
-        new Route('/products/new', 'products_new', 'GET', ProductController::class, 'new')
-    )
-    ->addRoute(
-        new Route('/products/list', 'products_list', 'GET', ProductController::class, 'list')
-    );
-// -----------------------------------------------------------
+$router->registerRoutes();
 
 if (php_sapi_name() === 'cli') {
     return;

@@ -10,4 +10,10 @@ abstract class AbstractController
         protected Environment $twig
     ) {
     }
+
+    public function redirect(string $location): void
+    {
+        header('Location: ' . $location);
+        exit;
+    }
 }

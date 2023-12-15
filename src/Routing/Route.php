@@ -2,30 +2,16 @@
 
 namespace App\Routing;
 
-class Route
+class Route extends AbstractRoute
 {
     public function __construct(
-        private string $uri,
-        private string $name,
-        private string $httpMethod,
+        string $uri,
+        string $name,
+        string $httpMethod,
         private string $controllerClass,
         private string $controller
     ) {
-    }
-
-    public function getUri(): string
-    {
-        return $this->uri;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function getHttpMethod(): string
-    {
-        return $this->httpMethod;
+        parent::__construct($uri, $name, $httpMethod);
     }
 
     public function getControllerClass(): string
