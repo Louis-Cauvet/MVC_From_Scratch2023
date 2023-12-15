@@ -2,18 +2,18 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;          // On indique qu'on va utiliser Doctrine
+use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity, ORM\Table(name: 'users')]     // On indique que cette classe est considérée comme une table 'users" dans la bdd
+#[ORM\Entity, ORM\Table(name: 'users')]
 class User
 {
-    #[ORM\Id, ORM\GeneratedValue, ORM\Column]    // On indique que cet attribut est clé primaire et auto-increment
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     private int $id;
 
-    #[ORM\Column(length: 255)]                   // On indique que cet attribut est une simple colonne de la table
+    #[ORM\Column(length: 255)]
     private string $email;
 
-    #[ORM\Column(length: 255)]                  // On indique que cet attribut est une simple colonne de la table
+    #[ORM\Column(length: 255)]
     private string $password;
 
     public function getId(): int

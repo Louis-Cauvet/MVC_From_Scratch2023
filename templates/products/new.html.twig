@@ -1,8 +1,28 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-  <h1>Produit créé</h1>
+    <h1>Ajout d'un produit dans le catalogue</h1>
 
-  <p>{{ product.name }}</p>
-  <p>{{ product.format() }}</p>
+    <form action="/products/register" method="post">
+      <div>
+        <label for="nom">Nom du produit :</label>
+        <input type="text" name="nom" id="nom" required/>
+      </div>
+      <div>
+        <label for="prix">Prix du produit :</label>
+        <input type="number" name="prix" id="prix" step="0.01" required/>
+      </div>
+      <div>
+        <input type="submit" value="Ajouter le produit" />
+      </div>
+    </form>
+    
+    {% if produitExiste %}
+      <p class="texteErreur">Désolé, ce produit existe déja au prix de {{ produitExiste }} euros dans notre catalogue !</p>
+    {% endif %}
+
+    {% if product %}
+      <h1 class="titreBas">Votre produit a bien été ajouté à la liste !</h1>
+      <p>{{ product.format() }}</p>
+    {% endif %}
 {% endblock %}

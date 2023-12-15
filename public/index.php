@@ -80,6 +80,7 @@ if (php_sapi_name() === 'cli') {
     'REQUEST_METHOD' => $httpMethod
 ] = $_SERVER;
 
+
 try {
     echo $router->execute($uri, $httpMethod);
 } catch (RouteNotFoundException) {

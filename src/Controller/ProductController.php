@@ -12,16 +12,38 @@ class ProductController extends AbstractController
     #[Route('/products/new', 'products_new')]
     public function new(EntityManager $em): string
     {
-        $product = new Product();
-        $product
-            ->setName(name: "sIgTKZNDZrr")
-            ->setPrice(76.24);
+        return $this->twig->render('products/new.html.twig');
+    }
 
-        $em->persist(entity: $product);
+    #[Route('/products/register', 'products_register', 'POST')]
+    public function register(ProductRepository $pr, EntityManager $em): string
+    {
+        if (!isset($_POST['nom']) || !isset($_POST['prix'])) {
+            $this->redirect('/products/new');
+        }
+
+        $nom = $_POST['nom'];
+        $prix = $_POST['prix'];
+
+        // on vérifie que le produit n'est pas connu dans la base de données
+        $ProduitExistant = $pr->findOneBy(['name' => $nom]);
+        if(!is_null($ProduitExistant)) {
+            $prixProduitExistant = $ProduitExistant->getPrice();
+            return $this->twig->render("products/new.html.twig", [
+                'produitExiste' => $prixProduitExistant
+            ]);
+        }
+
+        $nvProduit = new Product();
+        $nvProduit->setName($nom);
+        $nvProduit->setPrice($prix);
+
+
+        $em->persist($nvProduit);
         $em->flush();
 
         return $this->twig->render("products/new.html.twig", [
-            'product' => $product
+             'product' => $nvProduit
         ]);
     }
 

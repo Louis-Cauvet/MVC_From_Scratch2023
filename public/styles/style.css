@@ -1,0 +1,77 @@
+html {
+  width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body {
+  background-color: beige;
+  color: #051a41;
+}
+
+header {
+  width: 100%;
+  background-color: lightskyblue;
+}
+
+nav ul {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  list-style-type: none;
+  padding: 20px;
+  font-size: 22px;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+section {
+  padding: 30px;
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 40px;
+}
+
+p {
+  font-size: 18px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+form > div {
+  width: 100%;
+}
+
+input[type="submit"] {
+  background-color: #051a41;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 30px;
+  margin-top: 20px;
+}
+
+.titreBas {
+  margin-top: 100px;
+}
+
+.texteErreur {
+  color: red;
+  font-size: 20px;
+}

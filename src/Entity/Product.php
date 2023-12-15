@@ -18,7 +18,7 @@ class Product
 
     public function format(): string
     {
-        return $this->name . " : " . $this->price . "€";
+        return "Le produit ". $this->name . " coûte " . $this->price . "€";
     }
 
     public function getId(): int
