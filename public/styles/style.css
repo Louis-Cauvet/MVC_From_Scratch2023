@@ -41,6 +41,7 @@ section {
 
 h1 {
   margin-bottom: 40px;
+  font-size: 28px;
 }
 
 p {
@@ -74,4 +75,37 @@ input[type="submit"] {
 .texteErreur {
   color: red;
   font-size: 20px;
+}
+
+.catalogue {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 60px;
+  flex-wrap: wrap;
+}
+
+.catalogue article {
+  width: 20%;
+  background-color: beige;
+  padding: 20px 10px;
+  border: 2px solid #051a41;
+  border-radius: 30px;
+}
+
+.catalogue article {
+  width: 20%;
+  background-color: beige;
+  padding: 20px 10px;
+  border: 2px solid #051a41;
+  border-radius: 30px;
+}
+
+.catalogue a {
+  color: #885c05;
+  text-decoration: none;
+}
+
+.catalogue a:hover {
+  text-decoration: underline;
 }

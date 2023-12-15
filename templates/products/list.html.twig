@@ -5,13 +5,17 @@
 {% endblock %}
 
 {% block body %}
-  <h1>Liste des produits</h1>
+  <h1>Notre catalogue de produits</h1>
 
-  <h2>Sorties récentes</h2>
-
-  {% for product in products %}
-    <p>{{ product.format() }}</p>
-  {% else %}
-    <p>Aucun produit enregistré</p>
-  {% endfor %}
+  <section class="catalogue">
+    {% for product in products %}
+      <article>
+        <h2>{{ product.getName() }}</h2>
+        <h4>{{ product.getPrice() }} euros seulement</h4>
+        <a href={{product.getId()}}>Cliquez ici pour plus d'infos</a>
+      </article>
+    {% else %}
+      <p >Il n'y a pas encore de produits dans notre catalogue, ajoutez-en un premier pour le voir ici...</p>
+    {% endfor %}
+  </section>
 {% endblock %}
