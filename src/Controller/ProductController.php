@@ -55,14 +55,17 @@ class ProductController extends AbstractController
         ]);
     }
 
-    // #[Route('/products/{id}', 'products_item')]
-    // public function item(ProductRepository $productRepository, int $id): string
-    // {
+    #[Route('/products/{id}', 'products_item')]
+    public function item(int $idProduct, ProductRepository $productRepository): string
+    {
 
-    //     $product = find()
-    //     // Définition route : products/{id}   --> identifier à l'aide d'une expression régulière
-    //     // modifier le "getRoute()" dans le router pour y ajouter la gestion d'expression régulière (en se limitant aux int comme paramètre "id") --> "/\{(\d+)\}/"
-    //     // gérer les erreurs
-    //     return $this->twig->render('item...');
-    // }
+        // gérer les erreurs : vérifier que l'id du produit existe
+        if($productRepository->find(['id' => $idProduct])) {
+            return $this->twig->render('products/detail.html.twig', [
+                'product' => $productRepository->findOneBy(['id' => $idProduct])
+            ]);
+        } else {
+            header(('Location: http://127.0.0.1:8000/products/list'));
+        }
+    }
 }

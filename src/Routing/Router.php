@@ -2,6 +2,7 @@
 
 namespace App\Routing;
 
+use App\Controller\ProductController;
 use App\Routing\Attribute\Route as RouteAttribute;
 use App\Routing\Exception\RouteNotFoundException;
 use App\Utils\Filesystem;
@@ -18,24 +19,6 @@ class Router
     public function __construct(
         private ContainerInterface $container
     ) {
-    }
-
-    public function addRoute(Route $route): self
-    {
-        // TODO: Gestion doublon
-        $this->routes[] = $route;
-        return $this;
-    }
-
-    public function getRoute(string $uri, string $httpMethod): ?Route
-    {
-        foreach ($this->routes as $savedRoute) {
-            if ($savedRoute->getUri() === $uri && $savedRoute->getHttpMethod() === $httpMethod) {
-                return $savedRoute;
-            }
-        }
-
-        return null;
     }
 
     public function registerRoutes(): void
@@ -79,6 +62,13 @@ class Router
         }
     }
 
+    public function addRoute(Route $route): self
+    {
+        // TODO: Gestion doublon
+        $this->routes[] = $route;
+        return $this;
+    }
+
     /**
      * Executes a route against given URI and HTTP method
      *
@@ -100,22 +90,57 @@ class Router
         $constructorParams = $this->getMethodParams($controllerClass . '::__construct');
         $controllerInstance = new $controllerClass(...$constructorParams);
 
+
         // Contrôleur
         $method = $route->getController();
-        $controllerParams = $this->getMethodParams($controllerClass . '::' . $method);
-        return $controllerInstance->$method(...$controllerParams);
+
+        // si le contrôleur est "item()", on récupère l'id contenu dans l'url pour le passer dans ses paramètres
+        if($method == "item") {
+            $tabUri = explode('/', $uri);
+            $idProductUri = intval(end($tabUri));
+            $controllerParams = $this->getMethodParams($controllerClass . '::' . $method, $idProductUri);
+            return $controllerInstance->$method($idProductUri, ...$controllerParams);
+        } else {
+            $controllerParams = $this->getMethodParams($controllerClass . '::' . $method);
+            return $controllerInstance->$method(...$controllerParams);
+        }
     }
 
-    private function getMethodParams(string $method): array
+    public function getRoute(string $uri, string $httpMethod): ?Route
     {
+        $regExpr = "/\{(\w+)\}/";
+        $regExpr2 = "#/products/(\d+)#";
+
+        foreach ($this->routes as $savedRoute) {
+            // on vérifie si l'url de la requête est au format "/products/{id}", avec {id} qui vaut un nombre entier
+            if(preg_match($regExpr, $savedRoute->getUri()) && preg_match($regExpr2, $uri)) {
+                return $savedRoute;
+            }
+            if ($savedRoute->getUri() === $uri && $savedRoute->getHttpMethod() === $httpMethod) {
+                return $savedRoute;
+            }
+        }
+        return null;
+    }
+
+    private function getMethodParams(string $method, int $id = 0): array
+    {
+
         $methodInfos = new \ReflectionMethod($method);
+        // $methodInfos = new \ReflectionMethod("App\Controller\ProductController::item");
         $methodParameters = $methodInfos->getParameters();
 
         $params = [];
         foreach ($methodParameters as $param) {
             $paramType = $param->getType();
             $paramTypeFQCN = $paramType->getName();
-            $params[] = $this->container->get($paramTypeFQCN);
+
+            // on identifie le moment où on examine le paramètre "idProduct" de la méthode "App\Controller\ProductController::item"
+
+            if($method === "App\Controller\ProductController::item" && $paramTypeFQCN === "int" && $id != 0) {
+            } else {
+                $params[] = $this->container->get($paramTypeFQCN);
+            }
         }
 
         return $params;
