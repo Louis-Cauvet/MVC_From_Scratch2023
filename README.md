@@ -1,64 +1,77 @@
-# Rendus MVC
+# Rendu Louis Cauvet : Améliorations sur le MVC
 
-## Twig : définition d'une extension pour créer des URL dynamiquement
+### Amélioration principale : Gestion des urls possèdant des paramètres
+**Objectif** --> Gérer des urls de format */products/{id}* afin de pouvoir afficher les informations d'un produit en particulier, selon son identifiant passé en paramètres d'url.
 
-- Création d'une fonction Twig `path` à laquelle on passerait le nom d'une route, et qui nous renverrait l'URL correspondante
-
-## Paramètres d'URL
-
-- Pour gérer des URL comme `/products/5` ou bien `/products/mon-produit`, donc avec des parties **variables**
-- Définir un composant applicatif capable d'identifier et d'extraire un paramètre d'URL pour ensuite pouvoir l'injecter au sein d'un contrôleur
-- Pour une route donnée, si on a une URL type `/products/{id}` par exemple, alors faire en sorte que `/products/5` sache reconnaître le valeur 5 et la fournir en tant que paramètre du contrôleur
-- Un contrôleur ressemblerait donc à un truc comme ça :
-
-```php
-#[Route('/products/{id}', 'product_item', 'GET')]
-public function item(ProductRepository $repo, int $id)
-{
-    $product = $repo->find($id);
-    //...
+#### Etape 1 : Création d'une page permettant d'ajouter un produit dans la bdd
+1) Création du template de la page (*templates/products/new.html.twig*), qui contient un formulaire permettant de rentrer les données du nouveau produit.
+   
+2) Création du contrôleur `register()` appelé lors de la soumission du formulaire d'ajout (dans le groupe de contrôleurs *src/Controller/ProductController.php*). 
+> **Remarque** : J'effectue une double vérification dans ce contrôleur avant de rentrer les données dans la bdd :
+-  Je vérifie d'abord que tous les champs du formulaire sont bien renseignés :
+```
+if (!isset($_POST['nom']) || !isset($_POST['prix'])) {
+    $this->redirect('/products/new');
+}
+```
+- Puis je vérifie que le produit n'existe pas déjà dans la base (on part du principe qu'il ne peut pas y avoir 2 produits avec des noms identiques), auquel cas j'affiche un message d'erreur dans le template en indiquant son prix :
+```
+$ProduitExistant = $pr->findOneBy(['name' => $nom]);
+if(!is_null($ProduitExistant)) {
+    $prixProduitExistant = $ProduitExistant->getPrice();
+    return $this->twig->render("products/new.html.twig", [
+        'produitExiste' => $prixProduitExistant
+    ]);
 }
 ```
 
-## Instanciation dynamique de services
+#### Etape 2 : Création d'une page permettant de consulter la catalogue des produits disponibles
+1) Création du contrôleur `list()`, qui permet de récupérer tous les produits stockés en base à l'aide du `ProductRepository` (dans le groupe de contrôleurs *src/Controller/ProductController.php*).
+   
+2) Création du template de la page (*templates/products/list.html.twig*), qui liste les produits existants dans la base à l'aide d'une boucle `for`. Dans ce template, j'attribue à chaque élément un lien qui pointe vers l'url "*/product/{id}*" (où {id} est l'identifiant de l'élément), pour pouvoir accéder à sa future page de consultation. 
+> **Remarque** : J'ai géré aussi le cas où il n'y a aucun produit enregistré dans la base en affichant un message d'erreur
 
-- Aujourd'hui, notre container contient des instances déjà créées de services applicatifs
-- Il pourrait être intéressant de changer ce fonctionnement pour qu'un service soit créé dynamiquement lorsqu'on en a besoin
 
-## Réalisation d'un service d'upload de fichiers
 
-- Depuis un contrôleur réceptionnant les données d'un formulaire, création et utilisation d'un service d'upload de fichiers
-- Le but serait de consommer une instance de classe à laquelle on passerait, par exemple, un dossier de destination, un fichier entrant, etc...
-- On pourrait alors définir des contraintes de validation (type du fichier, taille maximale, etc...) et renvoyer une erreur en fonction de la situation
+#### Etape 3 : Mise en place du routage prenant en compte le paramètres passé dans l'url
+1) Création du contrôleur `item()` lié aux urls de format */products/{id}*, qui permet de rechercher dans la bdd un produit selon son identifiant passé en paramètres (dans le groupe de contrôleurs *src/Controller/ProductController.php*).
+> **Remarque** : J'ai géré le cas où l'identifiant de l'url ne correspond à aucun produit, afin de rediriger l'utilisateur vers la page de catalogue.
 
-## Installation et utilisation de symfony/http-foundation
+2) Modification de la fonction `getRoute()` de *src/Routing/Router.php*, afin d'identifier si l'url demandée est au format */products/{id}*. Pour cela, j'effectue une double vérification à l'aide de 2 expressions régulières :
+```
+$regExpr = "/\{(\w+)\}/";
+$regExpr2 = "#/products/(\d+)#";
 
-- Le composant `symfony/http-foundation` définit deux classes majeures `Request` et `Response`, qui pourraient être utilisées au sein du MVC
-- La classe `Request` contient également une méthode statique `createFromGlobals` permettant de construire un objet `Request` contenant déjà les données `GET`, `POST`, `FILES`, etc...
-- On pourrait donc faire utilisation de ce composant pour améliorer la structure du MVC
+foreach ($this->routes as $savedRoute) {
+    // on vérifie si l'url de la requête est au format "/products/{id}", avec {id} qui vaut un nombre entier
+    if(preg_match($regExpr, $savedRoute->getUri()) && preg_match($regExpr2, $uri)) {
+        return $savedRoute;
+    }
+```
+> **Remarque** : Cette partie pourrait sûrement être encore optimisée, afin d'effectuer la vérification en dehors de la fonction  `getRoute()`.
 
-## Définition de commandes dans la console
+3) Modification de la fonction `execute()` de *src/Routing/Router.php*, afin d'isoler le cas où le contrôleur demandé serait `item()`. Si c'est le cas, on divise l'url demandée en plusieurs morceaux afin de récupérer le dernier, correspondant à l'identifiant du produit, avant de le passer en paramètres du contrôleur :
+```
+// si le contrôleur est "item()", on récupère l'id contenu dans l'url pour le passer dans ses paramètres
+if($method == "item") {
+    $tabUri = explode('/', $uri);
+    $idProductUri = intval(end($tabUri));
+}
 
-- Intégration du composant `symfony/console` pour créer des commandes accessibles depuis le terminal
-- L'idée est de pouvoir définir des commandes personnalisées, comme par exemple :
-  - Envoyer un email de test
-  - Créer un utilisateur administrateur avec son mot de passe déjà haché
-  - Créer un ensemble de données de tests (fixtures), avec des données fakes (on pourra installer un composant type `fakerphp/faker`)
+$controllerParams = $this->getMethodParams($controllerClass . '::' . $method);
+if(isset($idProductUri)) {
+    return $controllerInstance->$method($idProductUri, ...$controllerParams);
+} else {
+    return $controllerInstance->$method(...$controllerParams);
+}
+```
+> **Remarque** : Cette modification nécéssite également de changer la méthode `getMethodParams()`du routeur, afin de ne pas ajouter l'identifiant du produit dans le tableau de paramètres puisqu'il est géré à part dans `execute()` :
+```
+if($method === "App\Controller\ProductController::item" && $paramTypeFQCN === "int") {
+    continue;
+} else {
+    $params[] = $this->container->get($paramTypeFQCN);
+}
+```
 
-## Définition d'une suite de tests
-
-- Installation de PHPUnit puis écriture de tests unitaires pour des classes comme `App\Routing\Router`, `App\DependencyInjection\Container`, etc...
-
-## Authentification/Autorisation
-
-- Authentification au sein de l'application (user/mot de passe) via un formulaire de login donc un contrôleur avec la méthode POST
-- Gestion de la session en cas d'authentification réussie : écriture d'un service de gestion de session qui permettrait, via un objet, d'interagir avec le tableau superglobal `$_SESSION`
-- Pour les autorisations : écriture d'un attribut applicable au-dessus d'un contrôleur, qui permettrait d'indiquer si on doit être connecté ou non pour accéder au contrôleur
-- Note : pas besoin de faire des rôles
-
-## Refactorisation du routeur & de la configuration
-
-- Point de départ : Le routeur fait trop de choses
-- Création d'une classe permettant de piloter et organiser le routeur et l'injection des services
-- On pourrait imaginer une classe _principale_ type `App` ou `Kernel` qui regrouperait le routeur, pour la fourniture des routes, et le container de services, pour la fourniture des services
-- On pourrait donc regrouper l'initialisation et la configuration de services dans cette classe, puis l'exécution du routeur avec le container, etc...dans une méthode type `handle` ou `dispatch`...
+#### Etape 12 : Ajout de style pour les pages 
