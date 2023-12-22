@@ -98,10 +98,12 @@ class Router
         if($method == "item") {
             $tabUri = explode('/', $uri);
             $idProductUri = intval(end($tabUri));
-            $controllerParams = $this->getMethodParams($controllerClass . '::' . $method, $idProductUri);
+        }
+
+        $controllerParams = $this->getMethodParams($controllerClass . '::' . $method);
+        if(isset($idProductUri)) {
             return $controllerInstance->$method($idProductUri, ...$controllerParams);
         } else {
-            $controllerParams = $this->getMethodParams($controllerClass . '::' . $method);
             return $controllerInstance->$method(...$controllerParams);
         }
     }
@@ -116,6 +118,7 @@ class Router
             if(preg_match($regExpr, $savedRoute->getUri()) && preg_match($regExpr2, $uri)) {
                 return $savedRoute;
             }
+
             if ($savedRoute->getUri() === $uri && $savedRoute->getHttpMethod() === $httpMethod) {
                 return $savedRoute;
             }
@@ -123,7 +126,7 @@ class Router
         return null;
     }
 
-    private function getMethodParams(string $method, int $id = 0): array
+    private function getMethodParams(string $method): array
     {
 
         $methodInfos = new \ReflectionMethod($method);
@@ -136,8 +139,8 @@ class Router
             $paramTypeFQCN = $paramType->getName();
 
             // on identifie le moment où on examine le paramètre "idProduct" de la méthode "App\Controller\ProductController::item"
-
-            if($method === "App\Controller\ProductController::item" && $paramTypeFQCN === "int" && $id != 0) {
+            if($method === "App\Controller\ProductController::item" && $paramTypeFQCN === "int") {
+                continue;
             } else {
                 $params[] = $this->container->get($paramTypeFQCN);
             }
