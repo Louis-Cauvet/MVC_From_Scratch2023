@@ -103,3 +103,28 @@ if($ajout === true) {
 }
 return $this;
 ```
+
+### Amélioration secondaire : Mise en place d'une page 404 pour les URL inexistantes
+**Objectif** --> Rediriger sur cette page si l'url demandée n'est pas trouvée par le routeur \
+
+#### Réalisation
+Création du template de la page (*templates/404.html.twig*), qui est affichée depuis le bootstrap si l'url n'est pas trouvée par le routeur :
+```
+try {
+    echo $router->execute($uri, $httpMethod);
+} catch (RouteNotFoundException) {
+    http_response_code(404);
+    echo $twig->render('404.html.twig');
+```
+
+J'ai également modifié le contrôleur 'item' de *src/Controller/ProductController.php*, pour rediriger sur cette page 404 si on recherche un identifiant de produit qui n'existe pas dans la base :
+```
+ if($productRepository->find(['id' => $idProduct])) {
+   return $this->twig->render('products/detail.html.twig', [
+       'product' => $productRepository->findOneBy(['id' => $idProduct])
+   ]);
+} else {
+   return $this->twig->render('404.html.twig');
+}
+```
+> **Remarque** : J'aurais sûrement encore pu améliorer ce système en n'appelant pas directement le template, mais en passant pas un contrôleur associé
