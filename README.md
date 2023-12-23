@@ -83,3 +83,23 @@ if($method === "App\Controller\ProductController::item" && $paramTypeFQCN === "i
 #### Etape 4 : Ajout de style pour les pages 
 1) Création d'un répertoire "public/styles" contenant un fichier "style.css" qui est lié au template parent "base.html.twig" afin d'appliquer du style sur toutes les pages qui en découlent.
 > **Remarque** : J'ai placé le répertoire "styles" dans "public" pour qu'il soit facilement accessible avec un chemin relatif, mais je ne sais pas si c'est le meilleur endroit pour le placer...
+
+
+### Amélioration secondaire : Gestion des doublons de routes dans le routeur
+**Objectif** --> Empêcher une même route d'être ajoutée plusieurs fois dans le tableau de routes du routeur \
+
+#### Réalisation 
+Dans la fonction `addRoute` du fichier **src/Routing/Router.php**, j'ai ajouté une condition afin de ne pas réajouter de route déjà existante dans le tableau :
+```
+$ajout = true;
+foreach ($this->routes as $r) {
+   if($r == $route) {
+       $ajout = false;
+   }
+}
+
+if($ajout === true) {
+   $this->routes[] = $route;
+}
+return $this;
+```
