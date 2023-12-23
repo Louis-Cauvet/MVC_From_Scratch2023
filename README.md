@@ -1,10 +1,12 @@
 # Rendu Louis Cauvet : Améliorations sur le MVC
 
 ### Amélioration principale : Gestion des urls possèdant des paramètres
-**Objectif** --> Gérer des urls de format */products/{id}* afin de pouvoir afficher les informations d'un produit en particulier, selon son identifiant passé en paramètres d'url.
+**Objectif** --> Gérer des urls de format */products/{id}* afin de pouvoir afficher les informations d'un produit en particulier, selon son identifiant passé en paramètres d'url. \
+⚠️ J'ai ajouté un export de ma table "Produits" à la racine du dépôt si vous voulez éviter d'avoir à créer la table pour tester ⚠️
 
 #### Etape 1 : Création d'une page permettant d'ajouter un produit dans la bdd
-1) Création du template de la page (*templates/products/new.html.twig*), qui contient un formulaire permettant de rentrer les données du nouveau produit.
+1) Création du template de la page (*templates/products/new.html.twig*), qui contient un formulaire permettant de rentrer les données du nouveau produit. \
+![Capture page nouveau produit](https://github.com/Louis-Cauvet/MVC_From_Scratch2023/blob/main/Captures/Capture_1.png)
    
 2) Création du contrôleur `register()` appelé lors de la soumission du formulaire d'ajout (dans le groupe de contrôleurs *src/Controller/ProductController.php*). 
 > **Remarque** : J'effectue une double vérification dans ce contrôleur avant de rentrer les données dans la bdd :
@@ -28,7 +30,8 @@ if(!is_null($ProduitExistant)) {
 #### Etape 2 : Création d'une page permettant de consulter la catalogue des produits disponibles
 1) Création du contrôleur `list()`, qui permet de récupérer tous les produits stockés en base à l'aide du `ProductRepository` (dans le groupe de contrôleurs *src/Controller/ProductController.php*).
    
-2) Création du template de la page (*templates/products/list.html.twig*), qui liste les produits existants dans la base à l'aide d'une boucle `for`. Dans ce template, j'attribue à chaque élément un lien qui pointe vers l'url "*/product/{id}*" (où {id} est l'identifiant de l'élément), pour pouvoir accéder à sa future page de consultation. 
+2) Création du template de la page (*templates/products/list.html.twig*), qui liste les produits existants dans la base à l'aide d'une boucle `for`. Dans ce template, j'attribue à chaque élément un lien qui pointe vers l'url "*/product/{id}*" (où {id} est l'identifiant de l'élément), pour pouvoir accéder à sa future page de consultation.
+![Capture page liste de produits](https://github.com/Louis-Cauvet/MVC_From_Scratch2023/blob/main/Captures/Capture_2.png)
 > **Remarque** : J'ai géré aussi le cas où il n'y a aucun produit enregistré dans la base en affichant un message d'erreur
 
 
@@ -65,7 +68,7 @@ if(isset($idProductUri)) {
     return $controllerInstance->$method(...$controllerParams);
 }
 ```
-> **Remarque** : Cette modification nécéssite également de changer la méthode `getMethodParams()`du routeur, afin de ne pas ajouter l'identifiant du produit dans le tableau de paramètres puisqu'il est géré à part dans `execute()` :
+> **Remarque** : Cette modification nécéssite également de changer la méthode `getMethodParams()`du routeur, afin de ne pas ajouter l'identifiant du produit dans le tableau de paramètres puisqu'il est géré à part dans `execute()`:
 ```
 if($method === "App\Controller\ProductController::item" && $paramTypeFQCN === "int") {
     continue;
@@ -74,4 +77,56 @@ if($method === "App\Controller\ProductController::item" && $paramTypeFQCN === "i
 }
 ```
 
-#### Etape 12 : Ajout de style pour les pages 
+4) Création du template de la page (*templates/products/detail.html.twig*), qui affiche les informations en détail du produit désigné.
+![Capture page détail produit](https://github.com/Louis-Cauvet/MVC_From_Scratch2023/blob/main/Captures/Capture_3.png)
+
+#### Etape 4 : Ajout de style pour les pages 
+1) Création d'un répertoire "public/styles" contenant un fichier "style.css" qui est lié au template parent "base.html.twig" afin d'appliquer du style sur toutes les pages qui en découlent.
+> **Remarque** : J'ai placé le répertoire "styles" dans "public" pour qu'il soit facilement accessible avec un chemin relatif, mais je ne sais pas si c'est le meilleur endroit pour le placer...
+
+
+### Amélioration secondaire : Gestion des doublons de routes dans le routeur
+**Objectif** --> Empêcher une même route d'être ajoutée plusieurs fois dans le tableau de routes du routeur \
+
+#### Réalisation 
+Dans la fonction `addRoute` du fichier **src/Routing/Router.php**, j'ai ajouté une condition afin de ne pas réajouter de route déjà existante dans le tableau :
+```
+$ajout = true;
+foreach ($this->routes as $r) {
+   if($r == $route) {
+       $ajout = false;
+   }
+}
+
+if($ajout === true) {
+   $this->routes[] = $route;
+}
+return $this;
+```
+
+### Amélioration secondaire : Mise en place d'une page 404 pour les URL inexistantes
+**Objectif** --> Rediriger sur cette page si l'url demandée n'est pas trouvée par le routeur \
+
+#### Réalisation
+Création du template de la page (*templates/404.html.twig*)
+![Capture page 404](https://github.com/Louis-Cauvet/MVC_From_Scratch2023/blob/main/Captures/Capture_4.png)  \
+Cette page est affichée depuis le bootstrap si l'url n'est pas trouvée par le routeur :
+```
+try {
+    echo $router->execute($uri, $httpMethod);
+} catch (RouteNotFoundException) {
+    http_response_code(404);
+    echo $twig->render('404.html.twig');
+```
+
+J'ai également modifié le contrôleur 'item' de *src/Controller/ProductController.php*, pour rediriger sur cette page 404 si on recherche un identifiant de produit qui n'existe pas dans la base :
+```
+ if($productRepository->find(['id' => $idProduct])) {
+   return $this->twig->render('products/detail.html.twig', [
+       'product' => $productRepository->findOneBy(['id' => $idProduct])
+   ]);
+} else {
+   return $this->twig->render('404.html.twig');
+}
+```
+> **Remarque** : J'aurais sûrement encore pu améliorer ce système en n'appelant pas directement le template, mais en passant pas un contrôleur associé
