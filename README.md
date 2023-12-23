@@ -31,7 +31,7 @@ if(!is_null($ProduitExistant)) {
 1) Création du contrôleur `list()`, qui permet de récupérer tous les produits stockés en base à l'aide du `ProductRepository` (dans le groupe de contrôleurs *src/Controller/ProductController.php*).
    
 2) Création du template de la page (*templates/products/list.html.twig*), qui liste les produits existants dans la base à l'aide d'une boucle `for`. Dans ce template, j'attribue à chaque élément un lien qui pointe vers l'url "*/product/{id}*" (où {id} est l'identifiant de l'élément), pour pouvoir accéder à sa future page de consultation.
-![Capture page nouveau produit](https://github.com/Louis-Cauvet/MVC_From_Scratch2023/blob/main/Captures/Capture_2.png)
+![Capture page liste de produits](https://github.com/Louis-Cauvet/MVC_From_Scratch2023/blob/main/Captures/Capture_2.png)
 > **Remarque** : J'ai géré aussi le cas où il n'y a aucun produit enregistré dans la base en affichant un message d'erreur
 
 
@@ -78,7 +78,7 @@ if($method === "App\Controller\ProductController::item" && $paramTypeFQCN === "i
 ```
 
 4) Création du template de la page (*templates/products/detail.html.twig*), qui affiche les informations en détail du produit désigné.
-![Capture page nouveau produit](https://github.com/Louis-Cauvet/MVC_From_Scratch2023/blob/main/Captures/Capture_3.png)
+![Capture page détail produit](https://github.com/Louis-Cauvet/MVC_From_Scratch2023/blob/main/Captures/Capture_3.png)
 
 #### Etape 4 : Ajout de style pour les pages 
 1) Création d'un répertoire "public/styles" contenant un fichier "style.css" qui est lié au template parent "base.html.twig" afin d'appliquer du style sur toutes les pages qui en découlent.
@@ -108,7 +108,9 @@ return $this;
 **Objectif** --> Rediriger sur cette page si l'url demandée n'est pas trouvée par le routeur \
 
 #### Réalisation
-Création du template de la page (*templates/404.html.twig*), qui est affichée depuis le bootstrap si l'url n'est pas trouvée par le routeur :
+Création du template de la page (*templates/404.html.twig*)
+![Capture page 404](https://github.com/Louis-Cauvet/MVC_From_Scratch2023/blob/main/Captures/Capture_4.png)  \
+Cette page est affichée depuis le bootstrap si l'url n'est pas trouvée par le routeur :
 ```
 try {
     echo $router->execute($uri, $httpMethod);
