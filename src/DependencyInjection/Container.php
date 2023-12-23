@@ -25,7 +25,6 @@ class Container implements ContainerInterface
     public function set(string $id, object $instance): self
     {
         $this->services[$id] = $instance;
-
         return $this;
     }
 }

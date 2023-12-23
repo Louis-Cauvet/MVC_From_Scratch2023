@@ -85,7 +85,7 @@ try {
     echo $router->execute($uri, $httpMethod);
 } catch (RouteNotFoundException) {
     http_response_code(404);
-    echo "Page non trouvée";
+    echo $twig->render('404.html.twig');
 } catch (Exception $e) {
     http_response_code(500);
     echo "Erreur interne, veuillez contacter l'administrateur";

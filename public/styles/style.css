@@ -109,3 +109,8 @@ input[type="submit"] {
 .catalogue a:hover {
   text-decoration: underline;
 }
+
+.error404 {
+  font-size: 38px;
+  color: red;
+}

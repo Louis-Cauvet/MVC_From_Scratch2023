@@ -64,8 +64,16 @@ class Router
 
     public function addRoute(Route $route): self
     {
-        // TODO: Gestion doublon
-        $this->routes[] = $route;
+        $ajout = true;
+        foreach ($this->routes as $r) {
+            if($r == $route) {
+                $ajout = false;
+            }
+        }
+
+        if($ajout === true) {
+            $this->routes[] = $route;
+        }
         return $this;
     }
 

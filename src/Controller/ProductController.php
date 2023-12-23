@@ -65,7 +65,7 @@ class ProductController extends AbstractController
                 'product' => $productRepository->findOneBy(['id' => $idProduct])
             ]);
         } else {
-            header(('Location: http://127.0.0.1:8000/products/list'));
+            return $this->twig->render('404.html.twig');
         }
     }
 }
