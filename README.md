@@ -68,7 +68,7 @@ if(isset($idProductUri)) {
     return $controllerInstance->$method(...$controllerParams);
 }
 ```
-> **Remarque** : Cette modification nécéssite également de changer la méthode `getMethodParams()`du routeur, afin de ne pas ajouter l'identifiant du produit dans le tableau de paramètres puisqu'il est géré à part dans `execute()`:
+Cette modification nécéssite également de changer la méthode `getMethodParams()`du routeur, afin de ne pas ajouter l'identifiant du produit dans le tableau de paramètres puisqu'il est géré à part dans `execute()`:
 ```
 if($method === "App\Controller\ProductController::item" && $paramTypeFQCN === "int") {
     continue;
